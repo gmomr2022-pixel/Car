@@ -79,7 +79,7 @@
       align-items: center;
       gap: 12px;
       box-shadow: 0 2px 8px var(--shadow);
-      z-index: 100;
+      z-index: 10;
     }
 
     h1 {
@@ -110,12 +110,13 @@
       font-size: 0.95rem;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
       white-space: nowrap;
     }
 
-    .btn:hover { 
-      opacity: 0.9;
+    .btn:hover {
+      opacity: 0.92;
       transform: translateY(-1px);
     }
 
@@ -134,6 +135,11 @@
       border: 1px solid var(--line);
       background: var(--surface-alt);
       color: var(--ink);
+    }
+
+    .btn.danger {
+      background: var(--danger);
+      color: white;
     }
 
     main {
@@ -157,6 +163,7 @@
       font-size: 0.9rem;
       color: var(--muted);
       font-weight: 600;
+      min-width: 70px;
     }
 
     .search-box,
@@ -174,6 +181,13 @@
     .search-box {
       flex: 1;
       min-width: 150px;
+    }
+
+    .utility-buttons {
+      display: flex;
+      gap: 8px;
+      margin-left: auto;
+      flex-wrap: wrap;
     }
 
     .grid {
@@ -244,16 +258,6 @@
       white-space: pre-wrap;
       word-break: break-word;
       line-height: 1.4;
-    }
-
-    .card-due {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--muted);
-    }
-
-    .card-due.overdue {
-      color: var(--danger);
     }
 
     .meta-row {
@@ -391,13 +395,9 @@
       justify-content: center;
     }
 
-    .close-btn:hover {
-      color: var(--ink);
-    }
+    .close-btn:hover { color: var(--ink); }
 
-    .modal-body {
-      padding: 20px;
-    }
+    .modal-body { padding: 20px; }
 
     .tabs {
       display: flex;
@@ -425,17 +425,10 @@
       border-bottom-color: var(--accent);
     }
 
-    .tab:hover {
-      color: var(--ink);
-    }
+    .tab:hover { color: var(--ink); }
 
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
     .form-group {
       margin-bottom: 16px;
@@ -471,10 +464,7 @@
       box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
     }
 
-    .form-group textarea {
-      resize: vertical;
-      min-height: 90px;
-    }
+    .form-group textarea { resize: vertical; min-height: 90px; }
 
     .camera-view {
       width: 100%;
@@ -500,10 +490,7 @@
       flex-wrap: wrap;
     }
 
-    .camera-btn {
-      flex: 1;
-      min-width: 120px;
-    }
+    .camera-btn { flex: 1; min-width: 120px; }
 
     .captured-plate {
       background: var(--plate);
@@ -546,6 +533,32 @@
       font-size: 1.2rem;
     }
 
+    .photo-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .photo-tile {
+      width: 72px;
+      height: 72px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: var(--surface-alt);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .photo-tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
     .form-actions {
       display: flex;
       gap: 8px;
@@ -570,45 +583,6 @@
       margin-bottom: 12px;
     }
 
-    @media (max-width: 640px) {
-      h1 {
-        font-size: 1.2rem;
-      }
-
-      .btn {
-        padding: 8px 12px;
-        font-size: 0.85rem;
-      }
-
-      .modal-content {
-        max-width: 100%;
-        border-radius: 12px 12px 0 0;
-      }
-
-      .grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
-        padding: 10px;
-      }
-
-      .camera-view {
-        height: 250px;
-      }
-
-      .tabs {
-        margin: -16px -16px 16px -16px;
-        padding: 0 16px;
-      }
-
-      .modal-body {
-        padding: 16px;
-      }
-
-      .modal-header {
-        padding: 16px;
-      }
-    }
-
     .spinner {
       display: inline-block;
       width: 16px;
@@ -621,6 +595,18 @@
 
     @keyframes spin {
       to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 1.2rem; }
+      .btn { padding: 8px 12px; font-size: 0.85rem; }
+      .modal-content { max-width: 100%; border-radius: 12px 12px 0 0; }
+      .grid { grid-template-columns: 1fr; gap: 10px; padding: 10px; }
+      .camera-view { height: 250px; }
+      .tabs { margin: -16px -16px 16px -16px; padding: 0 16px; }
+      .modal-body { padding: 16px; }
+      .modal-header { padding: 16px; }
+      .utility-buttons { width: 100%; justify-content: flex-end; }
     }
   </style>
 </head>
@@ -643,6 +629,10 @@
         <option value="in-progress">In Progress</option>
         <option value="ok">Done</option>
       </select>
+      <div class="utility-buttons">
+        <button class="btn secondary" onclick="exportJobsJSON()">Export JSON</button>
+        <button class="btn secondary" onclick="window.print()">Print PDF</button>
+      </div>
     </div>
 
     <main>
@@ -667,7 +657,6 @@
           <button class="tab" onclick="switchTab(event, 'manual-tab')">✏️ Manual</button>
         </div>
 
-        <!-- CAPTURE TAB -->
         <div id="capture-tab" class="tab-content active">
           <div class="form-group">
             <label>Camera Access</label>
@@ -688,8 +677,13 @@
           </div>
 
           <div class="form-group">
+            <label>Captured Images</label>
+            <div class="photo-gallery" id="photoGallery"></div>
+          </div>
+
+          <div class="form-group">
             <label>Record Job Details (Tap to Start)</label>
-            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
               <button class="btn camera-btn" id="recordBtn" onclick="toggleRecording()">🎤 Record</button>
               <button class="btn secondary camera-btn" id="playbackBtn" onclick="playRecording()" style="display:none;">▶️ Playback</button>
               <button class="btn secondary camera-btn" id="clearAudioBtn" onclick="clearRecording()" style="display:none;">🗑️ Clear</button>
@@ -699,8 +693,8 @@
           </div>
 
           <div class="form-group">
-            <label>Job Title (from recording)</label>
-            <input type="text" id="titleCapture" placeholder="Will be filled from recording...">
+            <label>Job Title</label>
+            <input type="text" id="titleCapture" placeholder="Vehicle or issue title">
           </div>
 
           <div class="form-group">
@@ -718,7 +712,6 @@
           </div>
         </div>
 
-        <!-- MANUAL TAB -->
         <div id="manual-tab" class="tab-content">
           <form id="jobForm" onsubmit="saveJob(event)">
             <input type="hidden" id="jobId">
@@ -731,6 +724,11 @@
             <div class="form-group">
               <label for="desc">Description</label>
               <textarea id="desc" required placeholder="Describe the work..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Voice to Text</label>
+              <button type="button" class="btn secondary" id="dictateBtn" onclick="toggleDictation()">🎙 Dictate</button>
             </div>
 
             <div class="form-group">
@@ -763,7 +761,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'job-card-manager-v2';
+    const STORAGE_KEY = 'job-card-manager-v3';
     const defaultJobs = [
       {
         id: 1001,
@@ -777,12 +775,14 @@
 
     let jobs = loadJobs();
     let jobCounter = Math.max(...jobs.map(job => Number(job.id) || 0), 1001) + 1;
-    
-    // Media API
     let mediaStream = null;
+    let micStream = null;
     let mediaRecorder = null;
     let recordedChunks = [];
     let isRecording = false;
+    let capturedPhotos = [];
+    let isDictating = false;
+    let recognition = null;
 
     function loadJobs() {
       try {
@@ -806,10 +806,28 @@
       event.target.classList.add('active');
     }
 
-    // CAMERA FUNCTIONS
+    function exportJobsJSON() {
+      const blob = new Blob([JSON.stringify(jobs, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'job-cards.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function showSettings() {
+      alert('Settings: future updates for team sync and job templates');
+    }
+
+    function clearPhotoGallery() {
+      capturedPhotos = [];
+      document.getElementById('photoGallery').innerHTML = '';
+    }
+
     async function startCamera() {
       try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        mediaStream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
         });
         document.getElementById('cameraStream').srcObject = mediaStream;
@@ -834,17 +852,37 @@
 
     function captureFrame() {
       const video = document.getElementById('cameraStream');
+      if (!video || !video.videoWidth) {
+        alert('Start the camera before taking a photo.');
+        return;
+      }
+
       const canvas = document.createElement('canvas');
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0);
-      
-      // Simple OCR simulation (mock)
+      const dataUrl = canvas.toDataURL('image/png');
+      capturedPhotos.push(dataUrl);
+      renderPhotoGallery();
+
       const plateNumber = generateMockPlate();
       document.getElementById('capturedPlate').textContent = plateNumber;
       document.getElementById('plateResult').style.display = 'block';
-      document.getElementById('titleCapture').value = `Job for vehicle ${plateNumber}`;
+      document.getElementById('titleCapture').value = `Vehicle ${plateNumber}`;
+    }
+
+    function renderPhotoGallery() {
+      const gallery = document.getElementById('photoGallery');
+      gallery.innerHTML = '';
+      capturedPhotos.forEach((src) => {
+        const tile = document.createElement('div');
+        tile.className = 'photo-tile';
+        const img = document.createElement('img');
+        img.src = src;
+        tile.appendChild(img);
+        gallery.appendChild(tile);
+      });
     }
 
     function generateMockPlate() {
@@ -857,18 +895,17 @@
       return plate;
     }
 
-    // AUDIO RECORDING
     async function toggleRecording() {
       if (!isRecording) {
         try {
-          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          mediaRecorder = new MediaRecorder(stream);
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(micStream);
           recordedChunks = [];
-          
+
           mediaRecorder.ondataavailable = (event) => {
             if (event.data.size > 0) recordedChunks.push(event.data);
           };
-          
+
           mediaRecorder.onstop = () => {
             const blob = new Blob(recordedChunks, { type: 'audio/webm' });
             const url = URL.createObjectURL(blob);
@@ -878,22 +915,31 @@
             document.getElementById('recordingStatus').textContent = '✓ Recording saved';
             document.getElementById('recordingStatus').style.display = 'block';
             document.getElementById('recordingStatus').style.color = 'var(--ok)';
+            document.getElementById('recordingStatus').innerHTML = '<div class="recording-indicator">Recording saved</div>';
+            if (micStream) {
+              micStream.getTracks().forEach(track => track.stop());
+              micStream = null;
+            }
           };
-          
+
           mediaRecorder.start();
           isRecording = true;
           document.getElementById('recordBtn').textContent = '🛑 Stop Recording';
           document.getElementById('recordBtn').classList.add('danger');
-          document.getElementById('recordingStatus').textContent = 'Recording...';
+          document.getElementById('recordingStatus').innerHTML = '<div class="recording-indicator">Recording</div>';
           document.getElementById('recordingStatus').style.display = 'block';
           document.getElementById('recordingStatus').style.color = 'var(--danger)';
-          document.getElementById('recordingStatus').innerHTML = '<div class="recording-indicator">Recording</div>';
         } catch (err) {
           alert('Microphone access denied: ' + err.message);
         }
       } else {
-        mediaRecorder.stop();
-        mediaStream.getTracks().forEach(track => track.stop());
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+        }
+        if (micStream) {
+          micStream.getTracks().forEach(track => track.stop());
+          micStream = null;
+        }
         isRecording = false;
         document.getElementById('recordBtn').textContent = '🎤 Record';
         document.getElementById('recordBtn').classList.remove('danger');
@@ -901,7 +947,8 @@
     }
 
     function playRecording() {
-      document.getElementById('audioPlayback').play();
+      const audio = document.getElementById('audioPlayback');
+      if (audio.src) audio.play();
     }
 
     function clearRecording() {
@@ -912,20 +959,59 @@
       document.getElementById('recordingStatus').style.display = 'none';
     }
 
+    function toggleDictation() {
+      const descField = document.getElementById('desc');
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert('Speech recognition is not supported in this browser.');
+        return;
+      }
+
+      if (isDictating) {
+        recognition.stop();
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.lang = 'en-GB';
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        isDictating = true;
+        document.getElementById('dictateBtn').textContent = '🛑 Stop Dictation';
+        document.getElementById('dictateBtn').classList.add('danger');
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        const current = descField.value.trim();
+        descField.value = current ? current + ' ' + transcript : transcript;
+      };
+
+      recognition.onend = () => {
+        isDictating = false;
+        document.getElementById('dictateBtn').textContent = '🎙 Dictate';
+        document.getElementById('dictateBtn').classList.remove('danger');
+      };
+
+      recognition.start();
+    }
+
     function saveFromCapture() {
       const title = document.getElementById('titleCapture').value.trim();
       const status = document.getElementById('statusCapture').value;
       const plate = document.getElementById('capturedPlate').textContent;
-      
+
       if (!title) {
-        alert('Please enter a job title');
+        alert('Please enter a job title before saving.');
         return;
       }
 
       const newJob = {
         id: Number(jobCounter++),
         title,
-        description: `Captured from camera. Recording: ${isRecording ? 'Available' : 'None'}`,
+        description: `Capture from camera. Plate: ${plate !== '—' ? plate : 'N/A'}. Photos: ${capturedPhotos.length}.`,
         plateNum: plate !== '—' ? plate : '',
         status,
         dueDate: ''
@@ -946,13 +1032,14 @@
       document.getElementById('recordingStatus').style.display = 'none';
       clearRecording();
       stopCamera();
+      clearPhotoGallery();
     }
 
     function formatDueDate(dateValue) {
       if (!dateValue) return '';
       const d = new Date(dateValue + 'T00:00:00');
       if (Number.isNaN(d.getTime())) return '';
-      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
     function isOverdue(job) {
@@ -994,13 +1081,8 @@
           event.dataTransfer.setData('text/plain', String(job.id));
         });
 
-        card.addEventListener('dragend', () => {
-          card.classList.remove('dragging');
-        });
-
-        card.addEventListener('dragover', (event) => {
-          event.preventDefault();
-        });
+        card.addEventListener('dragend', () => card.classList.remove('dragging'));
+        card.addEventListener('dragover', (event) => event.preventDefault());
 
         card.addEventListener('drop', (event) => {
           event.preventDefault();
@@ -1022,7 +1104,12 @@
 
         const desc = document.createElement('div');
         desc.className = 'card-desc';
-        desc.textContent = job.description.substring(0, 100);
+        desc.textContent = job.description;
+
+        const dueText = document.createElement('div');
+        dueText.className = 'card-desc';
+        const dueValue = formatDueDate(job.dueDate);
+        dueText.textContent = dueValue ? `Due: ${dueValue}` : 'No due date';
 
         const metaRow = document.createElement('div');
         metaRow.className = 'meta-row';
@@ -1050,7 +1137,7 @@
 
         actionGroup.append(editButton, deleteButton);
         metaRow.append(statusBadge, actionGroup);
-        cardBody.append(title, desc, metaRow);
+        cardBody.append(title, desc, dueText, metaRow);
         card.append(cardId, cardBody);
         grid.appendChild(card);
       });
@@ -1112,6 +1199,7 @@
       document.getElementById('jobId').value = '';
       stopCamera();
       if (isRecording) toggleRecording();
+      if (isDictating && recognition) recognition.stop();
       resetCaptureTab();
     }
 
@@ -1162,10 +1250,6 @@
         persistJobs();
         renderJobs();
       }
-    }
-
-    function showSettings() {
-      alert('Settings: Future updates feature');
     }
 
     renderJobs();
