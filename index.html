@@ -139,13 +139,26 @@
       font-weight: 600;
     }
 
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-box,
     .filter {
       background: var(--surface);
       border: 1px solid var(--line);
       border-radius: 6px;
-      padding: 8px 12px;
+      padding: 9px 12px;
       font-family: var(--sans);
       color: var(--ink);
+      min-height: 42px;
+    }
+
+    .search-box {
+      min-width: min(280px, 60vw);
     }
 
     .grid {
@@ -164,6 +177,16 @@
       display: flex;
       flex-direction: column;
       box-shadow: 0 2px 12px var(--shadow);
+      cursor: grab;
+    }
+
+    .card:active {
+      cursor: grabbing;
+    }
+
+    .card.dragging {
+      opacity: 0.45;
+      border-style: dashed;
     }
 
     .card-id {
@@ -199,6 +222,16 @@
       white-space: pre-wrap;
     }
 
+    .card-due {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .card-due.overdue {
+      color: var(--danger);
+    }
+
     .meta-row {
       display: flex;
       justify-content: space-between;
@@ -231,6 +264,9 @@
 
     .status.pending { color: var(--warning); }
     .status.pending::before { background: var(--warning); }
+
+    .status.in-progress { color: var(--accent); }
+    .status.in-progress::before { background: var(--accent); }
 
     .card-actions {
       display: flex;
@@ -332,6 +368,7 @@
 
       .header-actions,
       .toolbar,
+      .controls,
       .meta-row,
       .form-actions {
         width: 100%;
@@ -340,6 +377,10 @@
       .card-actions {
         width: 100%;
         justify-content: flex-end;
+      }
+
+      .search-box {
+        min-width: 100%;
       }
     }
   </style>
@@ -355,11 +396,15 @@
 
   <div class="toolbar">
     <div class="summary" id="jobSummary">0 jobs</div>
-    <select class="filter" id="statusFilter" onchange="renderJobs()">
-      <option value="all">All statuses</option>
-      <option value="pending">Pending</option>
-      <option value="ok">Completed</option>
-    </select>
+    <div class="controls">
+      <input id="searchInput" class="search-box" type="search" placeholder="Search jobs..." oninput="renderJobs()">
+      <select class="filter" id="statusFilter" onchange="renderJobs()">
+        <option value="all">All statuses</option>
+        <option value="pending">Pending</option>
+        <option value="in-progress">In Progress</option>
+        <option value="ok">Completed</option>
+      </select>
+    </div>
   </div>
 
   <main class="grid" id="jobGrid"></main>
@@ -385,9 +430,15 @@
         </div>
 
         <div class="form-group">
+          <label for="dueDate">Due Date</label>
+          <input type="date" id="dueDate">
+        </div>
+
+        <div class="form-group">
           <label for="status">Status</label>
           <select id="status">
             <option value="pending">Pending</option>
+            <option value="in-progress">In Progress</option>
             <option value="ok">Completed</option>
           </select>
         </div>
@@ -407,7 +458,8 @@
         id: 1001,
         title: 'HVAC System Maintenance',
         description: 'Routine checkup of server room cooling units and replacing filters.',
-        status: 'ok'
+        status: 'ok',
+        dueDate: '2026-10-20'
       }
     ];
 
@@ -429,10 +481,31 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
     }
 
+    function formatDueDate(dateValue) {
+      if (!dateValue) return '';
+      const d = new Date(dateValue + 'T00:00:00');
+      if (Number.isNaN(d.getTime())) return '';
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    function isOverdue(job) {
+      if (!job.dueDate || job.status === 'ok') return false;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const due = new Date(job.dueDate + 'T00:00:00');
+      return due < today;
+    }
+
     function getFilteredJobs() {
       const filter = document.getElementById('statusFilter').value;
-      if (filter === 'all') return jobs;
-      return jobs.filter(job => job.status === filter);
+      const searchText = document.getElementById('searchInput').value.trim().toLowerCase();
+
+      return jobs.filter(job => {
+        const matchesStatus = filter === 'all' || job.status === filter;
+        const haystack = `${job.title} ${job.description}`.toLowerCase();
+        const matchesSearch = !searchText || haystack.includes(searchText);
+        return matchesStatus && matchesSearch;
+      });
     }
 
     function renderJobs() {
@@ -446,6 +519,28 @@
       filteredJobs.forEach(job => {
         const card = document.createElement('div');
         card.className = 'card';
+        card.draggable = true;
+        card.dataset.id = String(job.id);
+
+        card.addEventListener('dragstart', () => {
+          card.classList.add('dragging');
+          event.dataTransfer.setData('text/plain', String(job.id));
+        });
+
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+        });
+
+        card.addEventListener('dragover', event => {
+          event.preventDefault();
+        });
+
+        card.addEventListener('drop', event => {
+          event.preventDefault();
+          const fromId = Number(event.dataTransfer.getData('text/plain'));
+          const toId = Number(job.id);
+          if (fromId && toId && fromId !== toId) reorderJobs(fromId, toId);
+        });
 
         const cardId = document.createElement('div');
         cardId.className = 'card-id';
@@ -462,12 +557,17 @@
         desc.className = 'card-desc';
         desc.textContent = job.description;
 
+        const dueText = document.createElement('div');
+        const dueValue = formatDueDate(job.dueDate);
+        dueText.className = `card-due${isOverdue(job) ? ' overdue' : ''}`;
+        dueText.textContent = dueValue ? `Due: ${dueValue}` : 'No due date';
+
         const metaRow = document.createElement('div');
         metaRow.className = 'meta-row';
 
         const status = document.createElement('div');
         status.className = `status ${job.status}`;
-        status.textContent = job.status === 'ok' ? 'Completed' : 'Pending';
+        status.textContent = job.status === 'ok' ? 'Completed' : job.status === 'in-progress' ? 'In Progress' : 'Pending';
 
         const actionGroup = document.createElement('div');
         actionGroup.className = 'card-actions';
@@ -488,7 +588,7 @@
 
         actionGroup.append(editButton, deleteButton);
         metaRow.append(status, actionGroup);
-        cardBody.append(title, desc, metaRow);
+        cardBody.append(title, desc, dueText, metaRow);
         card.append(cardId, cardBody);
         grid.appendChild(card);
       });
@@ -499,6 +599,17 @@
       emptyState.style.display = filteredCount === 0 ? 'block' : 'none';
     }
 
+    function reorderJobs(fromId, toId) {
+      const fromIndex = jobs.findIndex(job => job.id === fromId);
+      const toIndex = jobs.findIndex(job => job.id === toId);
+      if (fromIndex === -1 || toIndex === -1) return;
+
+      const [moved] = jobs.splice(fromIndex, 1);
+      jobs.splice(toIndex, 0, moved);
+      persistJobs();
+      renderJobs();
+    }
+
     function openModal(jobId = null) {
       const modal = document.getElementById('jobModal');
       const form = document.getElementById('jobForm');
@@ -506,6 +617,7 @@
       const hiddenId = document.getElementById('jobId');
       const titleInput = document.getElementById('title');
       const descInput = document.getElementById('desc');
+      const dueInput = document.getElementById('dueDate');
       const statusInput = document.getElementById('status');
 
       if (jobId) {
@@ -514,7 +626,8 @@
         hiddenId.value = job.id;
         titleInput.value = job.title;
         descInput.value = job.description;
-        statusInput.value = job.status;
+        dueInput.value = job.dueDate || '';
+        statusInput.value = job.status || 'pending';
         modalTitle.textContent = 'Edit Job';
       } else {
         form.reset();
@@ -538,6 +651,7 @@
       const idField = document.getElementById('jobId').value;
       const title = document.getElementById('title').value.trim();
       const description = document.getElementById('desc').value.trim();
+      const dueDate = document.getElementById('dueDate').value;
       const status = document.getElementById('status').value;
 
       if (!title || !description) return;
@@ -549,6 +663,7 @@
             ...jobs[idx],
             title,
             description,
+            dueDate,
             status
           };
         }
@@ -557,6 +672,7 @@
           id: Number(jobCounter++),
           title,
           description,
+          dueDate,
           status
         };
         jobs.unshift(newJob);
