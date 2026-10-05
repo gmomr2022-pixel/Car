@@ -445,7 +445,7 @@
       height: 300px;
       background: var(--surface-alt);
       border-radius: 8px;
-      border: 1px solid var(--line);
+      border: 2px solid var(--line);
       overflow: hidden;
       position: relative;
       margin-bottom: 12px;
@@ -484,33 +484,13 @@
       border: 2px solid rgba(0, 0, 0, 0.2);
     }
 
-    .photo-gallery {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-
-    .photo-tile {
-      width: 80px;
-      height: 80px;
-      border-radius: 8px;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      background: var(--surface-alt);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      cursor: pointer;
-    }
-
-    .photo-tile img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .status-info {
+      padding: 12px;
+      background: rgba(88, 166, 255, 0.1);
+      border-left: 3px solid var(--accent);
+      border-radius: 4px;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
     }
 
     .recording-indicator {
@@ -550,15 +530,6 @@
 
     .empty-state-icon { font-size: 3rem; margin-bottom: 12px; }
 
-    .status-info {
-      padding: 12px;
-      background: rgba(88, 166, 255, 0.1);
-      border-left: 3px solid var(--accent);
-      border-radius: 4px;
-      font-size: 0.9rem;
-      margin-bottom: 12px;
-    }
-
     @media (max-width: 640px) {
       h1 { font-size: 1.2rem; }
       .btn { padding: 8px 12px; font-size: 0.85rem; }
@@ -592,8 +563,7 @@
         <option value="ok">Completed</option>
       </select>
       <div class="utility-buttons">
-        <button class="btn secondary" onclick="exportPDF()">📄 PDF</button>
-        <button class="btn secondary" onclick="exportJSON()">📊 JSON</button>
+        <button class="btn secondary" onclick="exportJSON()">📊 Export</button>
       </div>
     </div>
 
@@ -619,14 +589,15 @@
           <button class="tab" onclick="switchTab(event, 'manual-tab')">✏️ Manual</button>
         </div>
 
-        <!-- CAPTURE TAB -->
+        <!-- CAPTURE TAB: CAMERA FOR PLATE + VOICE FOR ALL FIELDS -->
         <div id="capture-tab" class="tab-content active">
           <div class="status-info">
-            📸 Snap photos of the vehicle and use voice to record job details
+            📷 Camera captures license plate | 🎤 Voice fills all details including spaces
           </div>
 
+          <!-- CAMERA SECTION: PLATE RECOGNITION ONLY -->
           <div class="form-group">
-            <label>Camera Feed</label>
+            <label>📷 Scan License Plate</label>
             <div class="camera-view">
               <video id="cameraStream" playsinline></video>
             </div>
@@ -634,25 +605,21 @@
 
           <div class="camera-controls">
             <button class="btn camera-btn" id="startCameraBtn" onclick="startCamera()">📷 Start Camera</button>
-            <button class="btn secondary camera-btn" id="snapBtn" onclick="captureFrame()" style="display:none;">📸 Snap Photo</button>
+            <button class="btn secondary camera-btn" id="snapBtn" onclick="captureAndRecognizePlate()" style="display:none;">📸 Detect Plate</button>
             <button class="btn secondary camera-btn" id="stopCameraBtn" onclick="stopCamera()" style="display:none;">Stop Camera</button>
           </div>
 
-          <div id="photoSection" style="display:none;">
-            <label>Captured Photos</label>
-            <div class="photo-gallery" id="photoGallery"></div>
-          </div>
-
           <div id="plateResult" style="display:none;">
-            <label>Detected License Plate</label>
+            <label>✅ Detected License Plate</label>
             <div class="captured-plate" id="capturedPlate">—</div>
           </div>
 
+          <!-- VOICE SECTION: AUTO-FILL ALL FIELDS -->
           <div class="form-group">
-            <label>Record Job Audio (🎤 Speak the job details)</label>
+            <label>🎤 Voice Record All Details</label>
             <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
-              <button class="btn camera-btn" id="recordBtn" onclick="toggleRecording()">🎤 Record Audio</button>
-              <button class="btn secondary camera-btn" id="playbackBtn" onclick="playRecording()" style="display:none;">▶️ Play</button>
+              <button class="btn camera-btn" id="recordBtn" onclick="toggleVoiceCapture()">🎤 Record Voice</button>
+              <button class="btn secondary camera-btn" id="playbackBtn" onclick="playRecording()" style="display:none;">▶️ Replay</button>
               <button class="btn secondary camera-btn" id="clearAudioBtn" onclick="clearRecording()" style="display:none;">🗑️ Clear</button>
             </div>
             <div id="recordingStatus" style="display:none;"></div>
@@ -660,13 +627,18 @@
           </div>
 
           <div class="form-group">
-            <label>Job Title</label>
-            <input type="text" id="titleCapture" placeholder="Enter or say job title">
+            <label>Job Title (from voice)</label>
+            <input type="text" id="titleCapture" placeholder="Extracted from voice..." readonly>
           </div>
 
           <div class="form-group">
-            <label>Job Description (from recording)</label>
-            <textarea id="descCapture" placeholder="Will be populated from voice recording..."></textarea>
+            <label>Job Description (from voice)</label>
+            <textarea id="descCapture" placeholder="Full description extracted from voice..." readonly></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Amount / Cost (from voice)</label>
+            <input type="text" id="amountCapture" placeholder="Amount detected from voice...">
           </div>
 
           <div class="form-group">
@@ -687,7 +659,7 @@
         <!-- MANUAL TAB -->
         <div id="manual-tab" class="tab-content">
           <div class="status-info">
-            ✏️ Manually enter all job details with optional voice-to-text
+            ✏️ Manually enter all job details
           </div>
 
           <form id="jobForm" onsubmit="saveJob(event)">
@@ -701,14 +673,16 @@
             <div class="form-group">
               <label for="desc">Job Description *</label>
               <textarea id="desc" required placeholder="Describe the work..."></textarea>
-              <div style="margin-top: 8px;">
-                <button type="button" class="btn secondary" id="dictateBtn" onclick="toggleDictation()" style="width: 100%;">🎙 Dictate Description</button>
-              </div>
             </div>
 
             <div class="form-group">
               <label for="plateNum">License Plate Number</label>
               <input type="text" id="plateNum" placeholder="e.g., ABC 1234">
+            </div>
+
+            <div class="form-group">
+              <label for="amount">Amount / Cost</label>
+              <input type="text" id="amount" placeholder="e.g., £250.00 or 5000">
             </div>
 
             <div class="form-group">
@@ -736,16 +710,16 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'job-card-manager-pro-v1';
+    const STORAGE_KEY = 'job-card-manager-pro-v2';
     const defaultJobs = [
       {
         id: 1001,
         title: 'Engine Oil Change',
         description: 'Full engine oil service. Changed oil filter. Checked fluid levels.',
         plateNum: 'ABC 1234',
+        amount: '£50.00',
         status: 'ok',
         dueDate: '2026-10-15',
-        photos: 0,
         createdAt: new Date().toISOString()
       }
     ];
@@ -757,9 +731,8 @@
     let mediaRecorder = null;
     let recordedChunks = [];
     let isRecording = false;
-    let capturedPhotos = [];
-    let isDictating = false;
     let recognition = null;
+    let isListening = false;
 
     function loadJobs() {
       try {
@@ -802,25 +775,7 @@
       URL.revokeObjectURL(url);
     }
 
-    function exportPDF() {
-      const content = jobs.map(j => 
-        `${j.plateNum || '#' + j.id}\n${j.title}\n${j.description}\nStatus: ${j.status}\nDue: ${j.dueDate || 'N/A'}\n---`
-      ).join('\n');
-      
-      const printWindow = window.open('', '', 'height=600,width=800');
-      printWindow.document.write(`
-        <html><head><title>Job Cards Report</title></head><body>
-        <h1>Job Cards Report</h1>
-        <p>Generated: ${new Date().toLocaleString()}</p>
-        <p>Total Jobs: ${jobs.length}</p>
-        <hr>
-        <pre>${content}</pre>
-        </body></html>
-      `);
-      printWindow.document.close();
-      printWindow.print();
-    }
-
+    // ========== CAMERA FOR PLATE RECOGNITION ==========
     async function startCamera() {
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({
@@ -846,7 +801,7 @@
       document.getElementById('stopCameraBtn').style.display = 'none';
     }
 
-    function captureFrame() {
+    function captureAndRecognizePlate() {
       const video = document.getElementById('cameraStream');
       if (!video || !video.videoWidth) {
         alert('⚠️ Start camera before capturing.');
@@ -858,83 +813,90 @@
       canvas.height = video.videoHeight;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(video, 0, 0);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-      capturedPhotos.push(dataUrl);
-      renderPhotoGallery();
 
-      const plateNumber = detectPlate();
-      document.getElementById('capturedPlate').textContent = plateNumber;
+      // Simulate OCR plate recognition
+      const detectedPlate = performOCRSimulation(canvas);
+      document.getElementById('capturedPlate').textContent = detectedPlate;
       document.getElementById('plateResult').style.display = 'block';
-      document.getElementById('photoSection').style.display = 'block';
-      document.getElementById('titleCapture').value = `Vehicle ${plateNumber}`;
+      document.getElementById('titleCapture').value = `Vehicle: ${detectedPlate}`;
     }
 
-    function renderPhotoGallery() {
-      const gallery = document.getElementById('photoGallery');
-      gallery.innerHTML = '';
-      capturedPhotos.forEach((src, idx) => {
-        const tile = document.createElement('div');
-        tile.className = 'photo-tile';
-        const img = document.createElement('img');
-        img.src = src;
-        tile.appendChild(img);
-        tile.title = `Photo ${idx + 1}`;
-        gallery.appendChild(tile);
-      });
+    function performOCRSimulation(canvas) {
+      // In production, integrate real OCR service like Tesseract.js or cloud API
+      const plates = ['ABC 1234', 'XYZ 5678', 'DEF 9012', 'GHI 3456', 'JKL 7890'];
+      return plates[Math.floor(Math.random() * plates.length)];
     }
 
-    function detectPlate() {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      const nums = '0123456789';
-      let plate = '';
-      for (let i = 0; i < 3; i++) plate += chars[Math.floor(Math.random() * chars.length)];
-      plate += ' ';
-      for (let i = 0; i < 4; i++) plate += nums[Math.floor(Math.random() * nums.length)];
-      return plate;
-    }
-
-    async function toggleRecording() {
-      if (!isRecording) {
-        try {
-          micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          mediaRecorder = new MediaRecorder(micStream);
-          recordedChunks = [];
-
-          mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0) recordedChunks.push(event.data);
-          };
-
-          mediaRecorder.onstop = () => {
-            const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-            const url = URL.createObjectURL(blob);
-            document.getElementById('audioPlayback').src = url;
-            document.getElementById('playbackBtn').style.display = 'block';
-            document.getElementById('clearAudioBtn').style.display = 'block';
-            document.getElementById('recordingStatus').innerHTML = '<div class="recording-indicator">✓ Recording saved</div>';
-            document.getElementById('recordingStatus').style.display = 'block';
-            if (micStream) {
-              micStream.getTracks().forEach(track => track.stop());
-              micStream = null;
-            }
-          };
-
-          mediaRecorder.start();
-          isRecording = true;
-          document.getElementById('recordBtn').textContent = '🛑 Stop Recording';
-          document.getElementById('recordBtn').classList.add('danger');
-          document.getElementById('recordingStatus').innerHTML = '<div class="recording-indicator">Recording...</div>';
-          document.getElementById('recordingStatus').style.display = 'block';
-        } catch (err) {
-          alert('❌ Microphone access denied: ' + err.message);
-        }
-      } else {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          mediaRecorder.stop();
-        }
-        isRecording = false;
-        document.getElementById('recordBtn').textContent = '🎤 Record Audio';
-        document.getElementById('recordBtn').classList.remove('danger');
+    // ========== VOICE CAPTURE: AUTO-FILL ALL FIELDS ==========
+    function toggleVoiceCapture() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        alert('⚠️ Speech recognition not supported in this browser.');
+        return;
       }
+
+      if (isListening) {
+        if (recognition) recognition.stop();
+        return;
+      }
+
+      recognition = new SpeechRecognition();
+      recognition.lang = 'en-GB';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      let fullTranscript = '';
+
+      recognition.onstart = () => {
+        isListening = true;
+        document.getElementById('recordBtn').textContent = '🛑 Stop Recording';
+        document.getElementById('recordBtn').classList.add('danger');
+        document.getElementById('recordingStatus').innerHTML = '<div class="recording-indicator">Listening...</div>';
+        document.getElementById('recordingStatus').style.display = 'block';
+      };
+
+      recognition.onresult = (event) => {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            fullTranscript += transcript + ' ';
+          }
+        }
+        document.getElementById('descCapture').value = fullTranscript.trim();
+        extractFieldsFromTranscript(fullTranscript);
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        document.getElementById('recordBtn').textContent = '🎤 Record Voice';
+        document.getElementById('recordBtn').classList.remove('danger');
+        document.getElementById('recordingStatus').innerHTML = '<div class="recording-indicator">✓ Recording complete</div>';
+        setTimeout(() => {
+          document.getElementById('recordingStatus').style.display = 'none';
+        }, 2000);
+      };
+
+      recognition.start();
+    }
+
+    function extractFieldsFromTranscript(transcript) {
+      // Extract title (usually first few words)
+      const words = transcript.trim().split(/\s+/);
+      const title = words.slice(0, Math.min(5, words.length)).join(' ');
+      document.getElementById('titleCapture').value = title;
+
+      // Extract amount (look for £, $, or numbers followed by .00)
+      const amountMatch = transcript.match(/(?:£|\$)?[\d,]+(?:\.\d{2})?/);
+      if (amountMatch) {
+        document.getElementById('amountCapture').value = amountMatch[0];
+      }
+
+      // Full description is the entire transcript with spaces preserved
+      document.getElementById('descCapture').value = transcript.trim();
     }
 
     function playRecording() {
@@ -948,92 +910,6 @@
       document.getElementById('playbackBtn').style.display = 'none';
       document.getElementById('clearAudioBtn').style.display = 'none';
       document.getElementById('recordingStatus').style.display = 'none';
-    }
-
-    function toggleDictation() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert('⚠️ Speech recognition not supported in this browser.');
-        return;
-      }
-
-      if (isDictating) {
-        if (recognition) recognition.stop();
-        return;
-      }
-
-      recognition = new SpeechRecognition();
-      recognition.lang = 'en-GB';
-      recognition.continuous = false;
-      recognition.interimResults = false;
-
-      recognition.onstart = () => {
-        isDictating = true;
-        document.getElementById('dictateBtn').textContent = '🛑 Stop Dictation';
-        document.getElementById('dictateBtn').classList.add('danger');
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        const descField = document.getElementById('desc');
-        const current = descField.value.trim();
-        descField.value = current ? current + ' ' + transcript : transcript;
-      };
-
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-      };
-
-      recognition.onend = () => {
-        isDictating = false;
-        document.getElementById('dictateBtn').textContent = '🎙 Dictate Description';
-        document.getElementById('dictateBtn').classList.remove('danger');
-      };
-
-      recognition.start();
-    }
-
-    function saveFromCapture() {
-      const title = document.getElementById('titleCapture').value.trim();
-      const desc = document.getElementById('descCapture').value.trim();
-      const status = document.getElementById('statusCapture').value;
-      const plate = document.getElementById('capturedPlate').textContent;
-
-      if (!title) {
-        alert('⚠️ Please enter a job title.');
-        return;
-      }
-
-      const newJob = {
-        id: Number(jobCounter++),
-        title,
-        description: desc || `Job for vehicle ${plate !== '—' ? plate : 'Unknown'}`,
-        plateNum: plate !== '—' ? plate : '',
-        status,
-        dueDate: '',
-        photos: capturedPhotos.length,
-        createdAt: new Date().toISOString()
-      };
-
-      jobs.unshift(newJob);
-      persistJobs();
-      renderJobs();
-      closeModal();
-      resetCaptureTab();
-    }
-
-    function resetCaptureTab() {
-      document.getElementById('titleCapture').value = '';
-      document.getElementById('descCapture').value = '';
-      document.getElementById('statusCapture').value = 'pending';
-      document.getElementById('plateResult').style.display = 'none';
-      document.getElementById('photoSection').style.display = 'none';
-      document.getElementById('capturedPlate').textContent = '—';
-      document.getElementById('recordingStatus').style.display = 'none';
-      clearRecording();
-      stopCamera();
-      capturedPhotos = [];
-      renderPhotoGallery();
     }
 
     function formatDueDate(dateValue) {
@@ -1057,7 +933,7 @@
 
       return jobs.filter(job => {
         const matchesStatus = filter === 'all' || job.status === filter;
-        const haystack = `${job.title} ${job.description} ${job.plateNum || ''}`.toLowerCase();
+        const haystack = `${job.title} ${job.description} ${job.plateNum || ''} ${job.amount || ''}`.toLowerCase();
         const matchesSearch = !searchText || haystack.includes(searchText);
         return matchesStatus && matchesSearch;
       });
@@ -1107,6 +983,10 @@
         desc.className = 'card-desc';
         desc.textContent = job.description;
 
+        const amountInfo = document.createElement('div');
+        amountInfo.className = 'card-desc';
+        amountInfo.textContent = job.amount ? `💰 ${job.amount}` : 'No amount specified';
+
         const metaRow = document.createElement('div');
         metaRow.className = 'meta-row';
 
@@ -1133,7 +1013,7 @@
 
         actionGroup.append(editButton, deleteButton);
         metaRow.append(statusBadge, actionGroup);
-        cardBody.append(title, desc, metaRow);
+        cardBody.append(title, desc, amountInfo, metaRow);
         card.append(cardId, cardBody);
         grid.appendChild(card);
       });
@@ -1163,6 +1043,7 @@
       const titleInput = document.getElementById('title');
       const descInput = document.getElementById('desc');
       const plateInput = document.getElementById('plateNum');
+      const amountInput = document.getElementById('amount');
       const dueInput = document.getElementById('dueDate');
       const statusInput = document.getElementById('status');
 
@@ -1173,6 +1054,7 @@
         titleInput.value = job.title;
         descInput.value = job.description;
         plateInput.value = job.plateNum || '';
+        amountInput.value = job.amount || '';
         dueInput.value = job.dueDate || '';
         statusInput.value = job.status || 'pending';
         modalTitle.textContent = 'Edit Job Card';
@@ -1194,9 +1076,48 @@
       document.getElementById('jobForm').reset();
       document.getElementById('jobId').value = '';
       stopCamera();
-      if (isRecording) toggleRecording();
-      if (isDictating && recognition) recognition.stop();
+      if (isListening && recognition) recognition.stop();
       resetCaptureTab();
+    }
+
+    function resetCaptureTab() {
+      document.getElementById('titleCapture').value = '';
+      document.getElementById('descCapture').value = '';
+      document.getElementById('amountCapture').value = '';
+      document.getElementById('statusCapture').value = 'pending';
+      document.getElementById('plateResult').style.display = 'none';
+      document.getElementById('capturedPlate').textContent = '—';
+      document.getElementById('recordingStatus').style.display = 'none';
+      stopCamera();
+    }
+
+    function saveFromCapture() {
+      const plate = document.getElementById('capturedPlate').textContent;
+      const title = document.getElementById('titleCapture').value.trim();
+      const desc = document.getElementById('descCapture').value.trim();
+      const amount = document.getElementById('amountCapture').value.trim();
+      const status = document.getElementById('statusCapture').value;
+
+      if (!title) {
+        alert('⚠️ Please enter a job title.');
+        return;
+      }
+
+      const newJob = {
+        id: Number(jobCounter++),
+        title,
+        description: desc || 'Job details from voice capture',
+        plateNum: plate !== '—' ? plate : '',
+        amount,
+        status,
+        dueDate: '',
+        createdAt: new Date().toISOString()
+      };
+
+      jobs.unshift(newJob);
+      persistJobs();
+      renderJobs();
+      closeModal();
     }
 
     function saveJob(event) {
@@ -1206,6 +1127,7 @@
       const title = document.getElementById('title').value.trim();
       const description = document.getElementById('desc').value.trim();
       const plateNum = document.getElementById('plateNum').value.trim();
+      const amount = document.getElementById('amount').value.trim();
       const dueDate = document.getElementById('dueDate').value;
       const status = document.getElementById('status').value;
 
@@ -1222,6 +1144,7 @@
             title,
             description,
             plateNum,
+            amount,
             dueDate,
             status,
             updatedAt: new Date().toISOString()
@@ -1233,9 +1156,9 @@
           title,
           description,
           plateNum,
+          amount,
           dueDate,
           status,
-          photos: 0,
           createdAt: new Date().toISOString()
         };
         jobs.unshift(newJob);
