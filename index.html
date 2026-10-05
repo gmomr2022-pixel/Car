@@ -7,29 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Job Card">
   <style>
-    @font-face {
-      font-family: 'Barlow';
-      font-style: normal;
-      font-weight: 400;
-      font-display: swap;
-      src: url('https://gstatic.com') format('truetype');
-    }
-
-    @font-face {
-      font-family: 'Barlow';
-      font-style: normal;
-      font-weight: 600;
-      font-display: swap;
-      src: url('https://gstatic.com') format('truetype');
-    }
-
-    @font-face {
-      font-family: 'Barlow Condensed';
-      font-style: normal;
-      font-weight: 700;
-      font-display: swap;
-      src: url('https://gstatic.com') format('truetype');
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@500;700&display=swap');
 
     :root {
       --bg: #E4E6E8;
@@ -46,7 +24,7 @@
       --warning: #C76D00;
       --shadow: rgba(0, 0, 0, 0.08);
       --sans: 'Barlow', system-ui, -apple-system, sans-serif;
-      --cond: 'Barlow Condensed', system-ui, sans-serif;
+      --cond: 'Barlow Condensed', 'Arial Narrow', sans-serif;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -522,7 +500,7 @@
         card.draggable = true;
         card.dataset.id = String(job.id);
 
-        card.addEventListener('dragstart', () => {
+        card.addEventListener('dragstart', (event) => {
           card.classList.add('dragging');
           event.dataTransfer.setData('text/plain', String(job.id));
         });
@@ -531,11 +509,11 @@
           card.classList.remove('dragging');
         });
 
-        card.addEventListener('dragover', event => {
+        card.addEventListener('dragover', (event) => {
           event.preventDefault();
         });
 
-        card.addEventListener('drop', event => {
+        card.addEventListener('drop', (event) => {
           event.preventDefault();
           const fromId = Number(event.dataTransfer.getData('text/plain'));
           const toId = Number(job.id);
