@@ -5,74 +5,95 @@
   <title>Job Card Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Job Card">
+  <meta name="theme-color" content="#1D2125">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&family=Barlow+Condensed:wght@500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@700&display=swap');
 
     :root {
-      --bg: #E4E6E8;
-      --surface: #FFFFFF;
-      --ink: #1D2125;
-      --muted: #5E666E;
-      --line: #CBD0D5;
-      --plate: #F7D117;
-      --plate-ink: #111;
-      --accent: #1D2125;
-      --accent-ink: #fff;
-      --danger: #B3261E;
-      --ok: #1E7B46;
-      --warning: #C76D00;
-      --shadow: rgba(0, 0, 0, 0.08);
+      --bg: #0F1117;
+      --surface: #161B22;
+      --surface-alt: #21262D;
+      --ink: #E6EDF3;
+      --muted: #8B949E;
+      --line: #30363D;
+      --plate: #FFD700;
+      --plate-ink: #000;
+      --accent: #58A6FF;
+      --accent-ink: #0F1117;
+      --danger: #F85149;
+      --ok: #3FB950;
+      --warning: #D29922;
+      --shadow: rgba(0, 0, 0, 0.3);
       --sans: 'Barlow', system-ui, -apple-system, sans-serif;
       --cond: 'Barlow Condensed', 'Arial Narrow', sans-serif;
     }
 
-    @media (prefers-color-scheme: dark) {
+    @media (prefers-color-scheme: light) {
       :root {
-        --bg: #16181B;
-        --surface: #22262A;
-        --ink: #EEF0F2;
-        --muted: #9AA3A6;
-        --line: #434B54;
-        --accent: #EEF0F2;
-        --accent-ink: #16181B;
+        --bg: #FFFFFF;
+        --surface: #F6F8FA;
+        --surface-alt: #EAEEF2;
+        --ink: #24292F;
+        --muted: #57606A;
+        --line: #D0D7DE;
+        --plate: #F7D117;
+        --plate-ink: #111;
+        --accent: #0969DA;
+        --accent-ink: #fff;
+        --ok: #1A7F37;
+        --warning: #9E6A03;
       }
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
       background-color: var(--bg);
       color: var(--ink);
       font-family: var(--sans);
-      padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
-      line-height: 1.5;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
     }
 
     header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      max-width: 1200px;
-      margin: 0 auto 24px auto;
-      border-bottom: 2px solid var(--line);
-      padding-bottom: 12px;
       gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
+      box-shadow: 0 2px 8px var(--shadow);
+      z-index: 100;
     }
 
     h1 {
       font-family: var(--cond);
-      font-size: clamp(1.8rem, 4vw, 2.4rem);
+      font-size: 1.5rem;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
     }
 
     .btn {
@@ -84,67 +105,84 @@
       font-weight: 600;
       border-radius: 6px;
       cursor: pointer;
-      transition: opacity 0.15s ease;
-      min-height: 42px;
+      transition: all 0.15s ease;
+      min-height: 40px;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
     }
 
-    .btn:hover { opacity: 0.9; }
+    .btn:hover { 
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
 
     .btn.secondary {
-      background: var(--surface);
-      color: var(--ink);
-      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
     }
 
-    .btn.danger {
-      background: var(--danger);
-      color: white;
+    .btn.icon-only {
+      padding: 8px;
+      min-height: 36px;
+      width: 36px;
+      font-size: 1.2rem;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: var(--surface-alt);
+      color: var(--ink);
+    }
+
+    main {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
 
     .toolbar {
-      max-width: 1200px;
-      margin: 0 auto 18px auto;
+      background: var(--surface);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 16px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
+      gap: 8px;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .summary {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: var(--muted);
       font-weight: 600;
     }
 
-    .controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
     .search-box,
     .filter {
-      background: var(--surface);
+      background: var(--surface-alt);
       border: 1px solid var(--line);
       border-radius: 6px;
-      padding: 9px 12px;
+      padding: 8px 12px;
       font-family: var(--sans);
       color: var(--ink);
-      min-height: 42px;
+      font-size: 0.9rem;
+      min-height: 36px;
     }
 
     .search-box {
-      min-width: min(280px, 60vw);
+      flex: 1;
+      min-width: 150px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 16px;
-      max-width: 1200px;
-      margin: 0 auto;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      padding: 16px;
+      flex: 1;
+      overflow-y: auto;
     }
 
     .card {
@@ -154,16 +192,19 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 2px 12px var(--shadow);
+      box-shadow: 0 2px 8px var(--shadow);
+      transition: all 0.2s ease;
       cursor: grab;
     }
 
-    .card:active {
-      cursor: grabbing;
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px var(--shadow);
+      transform: translateY(-2px);
     }
 
     .card.dragging {
-      opacity: 0.45;
+      opacity: 0.5;
       border-style: dashed;
     }
 
@@ -172,37 +213,42 @@
       color: var(--plate-ink);
       font-family: var(--cond);
       font-weight: 700;
-      padding: 6px 12px;
-      font-size: 1.1rem;
+      padding: 8px 12px;
+      font-size: 1.2rem;
       display: inline-block;
       width: max-content;
       border-bottom-right-radius: 6px;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
+      min-width: 100px;
+      text-align: center;
     }
 
     .card-body {
-      padding: 16px;
+      padding: 12px;
       flex-grow: 1;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
     }
 
     .card-title {
       font-weight: 700;
-      font-size: 1.22rem;
-      line-height: 1.25;
+      font-size: 1.1rem;
+      line-height: 1.3;
+      color: var(--ink);
     }
 
     .card-desc {
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.4;
     }
 
     .card-due {
-      font-size: 0.82rem;
-      font-weight: 700;
+      font-size: 0.8rem;
+      font-weight: 600;
       color: var(--muted);
     }
 
@@ -215,25 +261,28 @@
       justify-content: space-between;
       align-items: center;
       gap: 8px;
-      flex-wrap: wrap;
       margin-top: auto;
+      flex-wrap: wrap;
     }
 
     .status {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
+      gap: 4px;
+      font-size: 0.75rem;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      padding: 4px 8px;
+      background: var(--surface-alt);
+      border-radius: 4px;
     }
 
     .status::before {
       content: '';
       display: inline-block;
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
     }
 
@@ -248,47 +297,144 @@
 
     .card-actions {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       margin-left: auto;
     }
 
     .icon-btn {
       background: transparent;
       border: 1px solid var(--line);
-      border-radius: 6px;
-      width: 34px;
-      height: 34px;
+      border-radius: 4px;
+      width: 28px;
+      height: 28px;
       cursor: pointer;
-      font-size: 1rem;
+      font-size: 0.9rem;
+      color: var(--muted);
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn:hover {
       color: var(--ink);
+      border-color: var(--accent);
+      background: var(--surface-alt);
     }
 
     .modal {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.7);
       justify-content: center;
       align-items: center;
       z-index: 1000;
       padding: 16px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal.active {
+      display: flex;
     }
 
     .modal-content {
       background: var(--surface);
-      padding: 24px;
-      border-radius: 8px;
-      width: 100%;
-      max-width: 500px;
       border: 1px solid var(--line);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+      border-radius: 12px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface-alt);
     }
 
     .modal-title {
       font-family: var(--cond);
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       text-transform: uppercase;
-      margin-bottom: 16px;
+      letter-spacing: 1px;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--muted);
+      transition: color 0.15s ease;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      color: var(--ink);
+    }
+
+    .modal-body {
+      padding: 20px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--line);
+      margin: -20px -20px 20px -20px;
+      padding: 0 20px;
+    }
+
+    .tab {
+      background: transparent;
+      border: none;
+      padding: 12px 16px;
+      font-family: var(--sans);
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s ease;
+      font-size: 0.95rem;
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .tab:hover {
+      color: var(--ink);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
     }
 
     .form-group {
@@ -299,6 +445,8 @@
       display: block;
       font-weight: 700;
       margin-bottom: 6px;
+      font-size: 0.95rem;
+      color: var(--ink);
     }
 
     .form-group input,
@@ -306,12 +454,21 @@
     .form-group select {
       width: 100%;
       padding: 10px 12px;
-      background: var(--bg);
+      background: var(--surface-alt);
       color: var(--ink);
       border: 1px solid var(--line);
       border-radius: 6px;
       font-family: var(--sans);
       font-size: 1rem;
+      transition: border-color 0.15s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
     }
 
     .form-group textarea {
@@ -319,123 +476,300 @@
       min-height: 90px;
     }
 
+    .camera-view {
+      width: 100%;
+      height: 300px;
+      background: var(--surface-alt);
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 12px;
+    }
+
+    #cameraStream {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .camera-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .camera-btn {
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .captured-plate {
+      background: var(--plate);
+      color: var(--plate-ink);
+      padding: 12px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      text-align: center;
+      font-family: 'Courier New', monospace;
+      margin-bottom: 12px;
+      letter-spacing: 2px;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .recording-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: rgba(248, 81, 73, 0.1);
+      border: 1px solid var(--danger);
+      border-radius: 6px;
+      color: var(--danger);
+      font-weight: 600;
+      font-size: 0.85rem;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .recording-indicator::before {
+      content: '●';
+      font-size: 1.2rem;
+    }
+
     .form-actions {
       display: flex;
       gap: 8px;
       justify-content: flex-end;
-      margin-top: 8px;
+      margin-top: 20px;
       flex-wrap: wrap;
     }
 
     .empty-state {
-      max-width: 1200px;
-      margin: 0 auto;
       text-align: center;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 32px 16px;
+      padding: 40px 20px;
       color: var(--muted);
       display: none;
     }
 
-    @media (max-width: 480px) {
+    .empty-state.show {
+      display: block;
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 640px) {
+      h1 {
+        font-size: 1.2rem;
+      }
+
       .btn {
-        width: 100%;
+        padding: 8px 12px;
+        font-size: 0.85rem;
       }
 
-      .header-actions,
-      .toolbar,
-      .controls,
-      .meta-row,
-      .form-actions {
-        width: 100%;
+      .modal-content {
+        max-width: 100%;
+        border-radius: 12px 12px 0 0;
       }
 
-      .card-actions {
-        width: 100%;
-        justify-content: flex-end;
+      .grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 10px;
       }
 
-      .search-box {
-        min-width: 100%;
+      .camera-view {
+        height: 250px;
       }
+
+      .tabs {
+        margin: -16px -16px 16px -16px;
+        padding: 0 16px;
+      }
+
+      .modal-body {
+        padding: 16px;
+      }
+
+      .modal-header {
+        padding: 16px;
+      }
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--muted);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🔧 Job Card Manager</h1>
-    <div class="header-actions">
-      <button class="btn secondary" onclick="clearAllJobs()">Clear All</button>
-      <button class="btn" onclick="openModal()">➕ New Job</button>
-    </div>
-  </header>
+  <div class="app-container">
+    <header>
+      <h1>🚗 Job Cards</h1>
+      <div class="header-actions">
+        <button class="btn icon-only" title="Settings" onclick="showSettings()">⚙️</button>
+        <button class="btn" onclick="openModal()">➕ New</button>
+      </div>
+    </header>
 
-  <div class="toolbar">
-    <div class="summary" id="jobSummary">0 jobs</div>
-    <div class="controls">
-      <input id="searchInput" class="search-box" type="search" placeholder="Search jobs..." oninput="renderJobs()">
+    <div class="toolbar">
+      <div class="summary" id="jobSummary">0 jobs</div>
+      <input id="searchInput" class="search-box" type="search" placeholder="Search..." oninput="renderJobs()">
       <select class="filter" id="statusFilter" onchange="renderJobs()">
-        <option value="all">All statuses</option>
+        <option value="all">All</option>
         <option value="pending">Pending</option>
         <option value="in-progress">In Progress</option>
-        <option value="ok">Completed</option>
+        <option value="ok">Done</option>
       </select>
     </div>
-  </div>
 
-  <main class="grid" id="jobGrid"></main>
-
-  <div class="empty-state" id="emptyState">
-    No jobs match your current filter.
+    <main>
+      <div class="grid" id="jobGrid"></div>
+      <div class="empty-state" id="emptyState">
+        <div class="empty-state-icon">📋</div>
+        <p>No job cards yet. Start by creating a new one!</p>
+      </div>
+    </main>
   </div>
 
   <div class="modal" id="jobModal" onclick="if(event.target === this) closeModal()">
     <div class="modal-content">
-      <h2 class="modal-title" id="modalTitle">Create New Job</h2>
-      <form id="jobForm" onsubmit="saveJob(event)">
-        <input type="hidden" id="jobId">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">New Job</h2>
+        <button class="close-btn" onclick="closeModal()">✕</button>
+      </div>
 
-        <div class="form-group">
-          <label for="title">Job Title</label>
-          <input type="text" id="title" required placeholder="e.g. Broken Light Fixture">
+      <div class="modal-body">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab(event, 'capture-tab')">📷 Capture</button>
+          <button class="tab" onclick="switchTab(event, 'manual-tab')">✏️ Manual</button>
         </div>
 
-        <div class="form-group">
-          <label for="desc">Description</label>
-          <textarea id="desc" rows="3" required placeholder="Describe the work requirements..."></textarea>
+        <!-- CAPTURE TAB -->
+        <div id="capture-tab" class="tab-content active">
+          <div class="form-group">
+            <label>Camera Access</label>
+            <div class="camera-view">
+              <video id="cameraStream" playsinline></video>
+            </div>
+          </div>
+
+          <div class="camera-controls">
+            <button class="btn camera-btn" id="startCameraBtn" onclick="startCamera()">📷 Start Camera</button>
+            <button class="btn secondary camera-btn" id="snapBtn" onclick="captureFrame()" style="display:none;">📸 Snap</button>
+            <button class="btn secondary camera-btn" id="stopCameraBtn" onclick="stopCamera()" style="display:none;">Stop</button>
+          </div>
+
+          <div id="plateResult" style="display:none;">
+            <label>Detected Plate Number</label>
+            <div class="captured-plate" id="capturedPlate">—</div>
+          </div>
+
+          <div class="form-group">
+            <label>Record Job Details (Tap to Start)</label>
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+              <button class="btn camera-btn" id="recordBtn" onclick="toggleRecording()">🎤 Record</button>
+              <button class="btn secondary camera-btn" id="playbackBtn" onclick="playRecording()" style="display:none;">▶️ Playback</button>
+              <button class="btn secondary camera-btn" id="clearAudioBtn" onclick="clearRecording()" style="display:none;">🗑️ Clear</button>
+            </div>
+            <div id="recordingStatus" style="display:none;"></div>
+            <audio id="audioPlayback" style="width: 100%; margin-top: 12px;"></audio>
+          </div>
+
+          <div class="form-group">
+            <label>Job Title (from recording)</label>
+            <input type="text" id="titleCapture" placeholder="Will be filled from recording...">
+          </div>
+
+          <div class="form-group">
+            <label>Status</label>
+            <select id="statusCapture">
+              <option value="pending">Pending</option>
+              <option value="in-progress">In Progress</option>
+              <option value="ok">Completed</option>
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn secondary" onclick="closeModal()">Cancel</button>
+            <button type="button" class="btn" onclick="saveFromCapture()">Save Job</button>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label for="dueDate">Due Date</label>
-          <input type="date" id="dueDate">
-        </div>
+        <!-- MANUAL TAB -->
+        <div id="manual-tab" class="tab-content">
+          <form id="jobForm" onsubmit="saveJob(event)">
+            <input type="hidden" id="jobId">
 
-        <div class="form-group">
-          <label for="status">Status</label>
-          <select id="status">
-            <option value="pending">Pending</option>
-            <option value="in-progress">In Progress</option>
-            <option value="ok">Completed</option>
-          </select>
-        </div>
+            <div class="form-group">
+              <label for="title">Job Title</label>
+              <input type="text" id="title" required placeholder="e.g. Broken Light Fixture">
+            </div>
 
-        <div class="form-actions">
-          <button type="button" class="btn secondary" onclick="closeModal()">Cancel</button>
-          <button type="submit" class="btn">Save Card</button>
+            <div class="form-group">
+              <label for="desc">Description</label>
+              <textarea id="desc" required placeholder="Describe the work..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="plateNum">Plate Number (Optional)</label>
+              <input type="text" id="plateNum" placeholder="e.g. ABC 1234">
+            </div>
+
+            <div class="form-group">
+              <label for="dueDate">Due Date</label>
+              <input type="date" id="dueDate">
+            </div>
+
+            <div class="form-group">
+              <label for="status">Status</label>
+              <select id="status">
+                <option value="pending">Pending</option>
+                <option value="in-progress">In Progress</option>
+                <option value="ok">Completed</option>
+              </select>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn secondary" onclick="closeModal()">Cancel</button>
+              <button type="submit" class="btn">Save Card</button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 
   <script>
-    const STORAGE_KEY = 'job-card-manager-v1';
+    const STORAGE_KEY = 'job-card-manager-v2';
     const defaultJobs = [
       {
         id: 1001,
         title: 'HVAC System Maintenance',
         description: 'Routine checkup of server room cooling units and replacing filters.',
+        plateNum: 'ABC 1234',
         status: 'ok',
         dueDate: '2026-10-20'
       }
@@ -443,6 +777,12 @@
 
     let jobs = loadJobs();
     let jobCounter = Math.max(...jobs.map(job => Number(job.id) || 0), 1001) + 1;
+    
+    // Media API
+    let mediaStream = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
 
     function loadJobs() {
       try {
@@ -459,11 +799,160 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(jobs));
     }
 
+    function switchTab(event, tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // CAMERA FUNCTIONS
+    async function startCamera() {
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        document.getElementById('cameraStream').srcObject = mediaStream;
+        document.getElementById('startCameraBtn').style.display = 'none';
+        document.getElementById('snapBtn').style.display = 'block';
+        document.getElementById('stopCameraBtn').style.display = 'block';
+      } catch (err) {
+        alert('Camera access denied: ' + err.message);
+      }
+    }
+
+    function stopCamera() {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+      }
+      document.getElementById('cameraStream').srcObject = null;
+      document.getElementById('startCameraBtn').style.display = 'block';
+      document.getElementById('snapBtn').style.display = 'none';
+      document.getElementById('stopCameraBtn').style.display = 'none';
+    }
+
+    function captureFrame() {
+      const video = document.getElementById('cameraStream');
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0);
+      
+      // Simple OCR simulation (mock)
+      const plateNumber = generateMockPlate();
+      document.getElementById('capturedPlate').textContent = plateNumber;
+      document.getElementById('plateResult').style.display = 'block';
+      document.getElementById('titleCapture').value = `Job for vehicle ${plateNumber}`;
+    }
+
+    function generateMockPlate() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const nums = '0123456789';
+      let plate = '';
+      for (let i = 0; i < 3; i++) plate += chars[Math.floor(Math.random() * chars.length)];
+      plate += ' ';
+      for (let i = 0; i < 4; i++) plate += nums[Math.floor(Math.random() * nums.length)];
+      return plate;
+    }
+
+    // AUDIO RECORDING
+    async function toggleRecording() {
+      if (!isRecording) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          recordedChunks = [];
+          
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) recordedChunks.push(event.data);
+          };
+          
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+            const url = URL.createObjectURL(blob);
+            document.getElementById('audioPlayback').src = url;
+            document.getElementById('playbackBtn').style.display = 'block';
+            document.getElementById('clearAudioBtn').style.display = 'block';
+            document.getElementById('recordingStatus').textContent = '✓ Recording saved';
+            document.getElementById('recordingStatus').style.display = 'block';
+            document.getElementById('recordingStatus').style.color = 'var(--ok)';
+          };
+          
+          mediaRecorder.start();
+          isRecording = true;
+          document.getElementById('recordBtn').textContent = '🛑 Stop Recording';
+          document.getElementById('recordBtn').classList.add('danger');
+          document.getElementById('recordingStatus').textContent = 'Recording...';
+          document.getElementById('recordingStatus').style.display = 'block';
+          document.getElementById('recordingStatus').style.color = 'var(--danger)';
+          document.getElementById('recordingStatus').innerHTML = '<div class="recording-indicator">Recording</div>';
+        } catch (err) {
+          alert('Microphone access denied: ' + err.message);
+        }
+      } else {
+        mediaRecorder.stop();
+        mediaStream.getTracks().forEach(track => track.stop());
+        isRecording = false;
+        document.getElementById('recordBtn').textContent = '🎤 Record';
+        document.getElementById('recordBtn').classList.remove('danger');
+      }
+    }
+
+    function playRecording() {
+      document.getElementById('audioPlayback').play();
+    }
+
+    function clearRecording() {
+      recordedChunks = [];
+      document.getElementById('audioPlayback').src = '';
+      document.getElementById('playbackBtn').style.display = 'none';
+      document.getElementById('clearAudioBtn').style.display = 'none';
+      document.getElementById('recordingStatus').style.display = 'none';
+    }
+
+    function saveFromCapture() {
+      const title = document.getElementById('titleCapture').value.trim();
+      const status = document.getElementById('statusCapture').value;
+      const plate = document.getElementById('capturedPlate').textContent;
+      
+      if (!title) {
+        alert('Please enter a job title');
+        return;
+      }
+
+      const newJob = {
+        id: Number(jobCounter++),
+        title,
+        description: `Captured from camera. Recording: ${isRecording ? 'Available' : 'None'}`,
+        plateNum: plate !== '—' ? plate : '',
+        status,
+        dueDate: ''
+      };
+
+      jobs.unshift(newJob);
+      persistJobs();
+      renderJobs();
+      closeModal();
+      resetCaptureTab();
+    }
+
+    function resetCaptureTab() {
+      document.getElementById('titleCapture').value = '';
+      document.getElementById('statusCapture').value = 'pending';
+      document.getElementById('plateResult').style.display = 'none';
+      document.getElementById('capturedPlate').textContent = '—';
+      document.getElementById('recordingStatus').style.display = 'none';
+      clearRecording();
+      stopCamera();
+    }
+
     function formatDueDate(dateValue) {
       if (!dateValue) return '';
       const d = new Date(dateValue + 'T00:00:00');
       if (Number.isNaN(d.getTime())) return '';
-      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     }
 
     function isOverdue(job) {
@@ -480,7 +969,7 @@
 
       return jobs.filter(job => {
         const matchesStatus = filter === 'all' || job.status === filter;
-        const haystack = `${job.title} ${job.description}`.toLowerCase();
+        const haystack = `${job.title} ${job.description} ${job.plateNum || ''}`.toLowerCase();
         const matchesSearch = !searchText || haystack.includes(searchText);
         return matchesStatus && matchesSearch;
       });
@@ -522,7 +1011,7 @@
 
         const cardId = document.createElement('div');
         cardId.className = 'card-id';
-        cardId.textContent = `#JOB-${job.id}`;
+        cardId.textContent = job.plateNum || `#${job.id}`;
 
         const cardBody = document.createElement('div');
         cardBody.className = 'card-body';
@@ -533,19 +1022,14 @@
 
         const desc = document.createElement('div');
         desc.className = 'card-desc';
-        desc.textContent = job.description;
-
-        const dueText = document.createElement('div');
-        const dueValue = formatDueDate(job.dueDate);
-        dueText.className = `card-due${isOverdue(job) ? ' overdue' : ''}`;
-        dueText.textContent = dueValue ? `Due: ${dueValue}` : 'No due date';
+        desc.textContent = job.description.substring(0, 100);
 
         const metaRow = document.createElement('div');
         metaRow.className = 'meta-row';
 
-        const status = document.createElement('div');
-        status.className = `status ${job.status}`;
-        status.textContent = job.status === 'ok' ? 'Completed' : job.status === 'in-progress' ? 'In Progress' : 'Pending';
+        const statusBadge = document.createElement('div');
+        statusBadge.className = `status ${job.status}`;
+        statusBadge.textContent = job.status === 'ok' ? '✓ Done' : job.status === 'in-progress' ? '▶ Active' : '⏱ Pending';
 
         const actionGroup = document.createElement('div');
         actionGroup.className = 'card-actions';
@@ -553,28 +1037,28 @@
         const editButton = document.createElement('button');
         editButton.type = 'button';
         editButton.className = 'icon-btn';
-        editButton.title = 'Edit job';
+        editButton.title = 'Edit';
         editButton.textContent = '✎';
         editButton.onclick = () => openModal(job.id);
 
         const deleteButton = document.createElement('button');
         deleteButton.type = 'button';
         deleteButton.className = 'icon-btn';
-        deleteButton.title = 'Delete job';
+        deleteButton.title = 'Delete';
         deleteButton.textContent = '🗑';
         deleteButton.onclick = () => deleteJob(job.id);
 
         actionGroup.append(editButton, deleteButton);
-        metaRow.append(status, actionGroup);
-        cardBody.append(title, desc, dueText, metaRow);
+        metaRow.append(statusBadge, actionGroup);
+        cardBody.append(title, desc, metaRow);
         card.append(cardId, cardBody);
         grid.appendChild(card);
       });
 
       const total = jobs.length;
       const filteredCount = filteredJobs.length;
-      summary.textContent = `${filteredCount} of ${total} job${total === 1 ? '' : 's'}`;
-      emptyState.style.display = filteredCount === 0 ? 'block' : 'none';
+      summary.textContent = `${filteredCount}/${total}`;
+      emptyState.classList.toggle('show', filteredCount === 0);
     }
 
     function reorderJobs(fromId, toId) {
@@ -595,6 +1079,7 @@
       const hiddenId = document.getElementById('jobId');
       const titleInput = document.getElementById('title');
       const descInput = document.getElementById('desc');
+      const plateInput = document.getElementById('plateNum');
       const dueInput = document.getElementById('dueDate');
       const statusInput = document.getElementById('status');
 
@@ -604,23 +1089,30 @@
         hiddenId.value = job.id;
         titleInput.value = job.title;
         descInput.value = job.description;
+        plateInput.value = job.plateNum || '';
         dueInput.value = job.dueDate || '';
         statusInput.value = job.status || 'pending';
         modalTitle.textContent = 'Edit Job';
+        document.querySelector('.tab[onclick*="manual"]').click();
       } else {
         form.reset();
         hiddenId.value = '';
         statusInput.value = 'pending';
-        modalTitle.textContent = 'Create New Job';
+        modalTitle.textContent = 'New Job';
+        resetCaptureTab();
+        document.querySelector('.tab[onclick*="capture"]').click();
       }
 
-      modal.style.display = 'flex';
+      modal.classList.add('active');
     }
 
     function closeModal() {
-      document.getElementById('jobModal').style.display = 'none';
+      document.getElementById('jobModal').classList.remove('active');
       document.getElementById('jobForm').reset();
       document.getElementById('jobId').value = '';
+      stopCamera();
+      if (isRecording) toggleRecording();
+      resetCaptureTab();
     }
 
     function saveJob(event) {
@@ -629,6 +1121,7 @@
       const idField = document.getElementById('jobId').value;
       const title = document.getElementById('title').value.trim();
       const description = document.getElementById('desc').value.trim();
+      const plateNum = document.getElementById('plateNum').value.trim();
       const dueDate = document.getElementById('dueDate').value;
       const status = document.getElementById('status').value;
 
@@ -641,6 +1134,7 @@
             ...jobs[idx],
             title,
             description,
+            plateNum,
             dueDate,
             status
           };
@@ -650,6 +1144,7 @@
           id: Number(jobCounter++),
           title,
           description,
+          plateNum,
           dueDate,
           status
         };
@@ -662,21 +1157,15 @@
     }
 
     function deleteJob(jobId) {
-      const confirmed = window.confirm('Delete this job card?');
-      if (!confirmed) return;
-
-      jobs = jobs.filter(job => job.id !== jobId);
-      persistJobs();
-      renderJobs();
+      if (confirm('Delete this job card?')) {
+        jobs = jobs.filter(job => job.id !== jobId);
+        persistJobs();
+        renderJobs();
+      }
     }
 
-    function clearAllJobs() {
-      const confirmed = window.confirm('Delete all job cards?');
-      if (!confirmed) return;
-
-      jobs = [];
-      persistJobs();
-      renderJobs();
+    function showSettings() {
+      alert('Settings: Future updates feature');
     }
 
     renderJobs();
